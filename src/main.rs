@@ -5,7 +5,8 @@ use std::{
 use kml::{
     reader::KmlReader,
     types::{Kml, Placemark}
-};  
+};
+use chrono::{DateTime, FixedOffset};
 
 fn main() {
     let path = env::args().skip(1).next().expect("Didn't get a path");
@@ -29,7 +30,7 @@ enum Activity {
 
 impl Activity {
     fn try_from_placemark(elem: Placemark) -> Option<Activity> {
-        let ext_data = elem.children.into_iter()
+        let ext_data = elem.children.iter()
             .find(|e| e.name == "ExtendedData")?;
         let category_value = ext_data.children.iter()
             .find(|e| e.attrs.get("name") == Some(&"Category".to_string()))?
@@ -47,9 +48,16 @@ impl Activity {
             .content?
             .parse::<f64>()
             .expect("Couldn't parse distance");
+        let timespan = elem.children.iter()
+            .find(|e| e.name == "TimeSpan")?;
+        let start_str = timespan.children.iter()
+            .find(|e| e.name == "begin")?
+            .content.clone()?;
+        let start = DateTime::parse_from_rfc3339(&start_str)
+            .expect("Couldn't parse begin time");
         match category_value.as_str() {
-            "Driving" => Some(Activity::Driving(ActivityValue { distance: distance_value })),
-            "Cycling" => Some(Activity::Cycling(ActivityValue { distance: distance_value })),
+            "Driving" => Some(Activity::Driving(ActivityValue { distance: distance_value, time: start })),
+            "Cycling" => Some(Activity::Cycling(ActivityValue { distance: distance_value, time: start })),
             _ => None
         }
     }
@@ -58,6 +66,7 @@ impl Activity {
 #[derive(Debug)]
 struct ActivityValue {
     distance: f64,
+    time: DateTime<FixedOffset>
 }
 
 fn unpack(kml: Kml<f64>) -> Vec<Activity> {
