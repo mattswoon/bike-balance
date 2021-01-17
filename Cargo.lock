@@ -93,7 +93,6 @@ dependencies = [
  "itertools 0.10.0",
  "kml",
  "polars",
- "textplots",
 ]
 
 [[package]]
@@ -338,12 +337,6 @@ checksum = "2b2466559f260f48ad25fe6317b3c8dac77b5bdb5763ac7d9d6103530663bc90"
 dependencies = [
  "memchr",
 ]
-
-[[package]]
-name = "drawille"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81e127c19c76f5610bb32f6a5f5d1ce5a5374fedba554f05cf5599e3041cd634"
 
 [[package]]
 name = "either"
@@ -1107,15 +1100,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
-]
-
-[[package]]
-name = "textplots"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "368535e8fa80f6f07725dd0b7a756792db7758786881665a7951f436b92d5141"
-dependencies = [
- "drawille",
 ]
 
 [[package]]

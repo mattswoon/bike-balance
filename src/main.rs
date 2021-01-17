@@ -10,7 +10,9 @@ use chrono::{DateTime, FixedOffset, Local};
 use polars::prelude::*;
 
 fn main() {
-    let path = env::args().skip(1).next().expect("Didn't get a path");
+    let path = env::args().skip(1).next().or_else(
+        || env::var("BIKEBALANCE").ok()
+    ).expect("Couldn't get a data dir");
     let mut activities = vec![];
     for entry in fs::read_dir(&path).expect("Couldn't read directory") {
         let e = entry.expect("Couldn't read directory");
@@ -21,7 +23,23 @@ fn main() {
     }
     activities.sort_by_key(|a| a.start);
     let df = to_dataframe(activities);
-    println!("{:?}", df);
+    let summary = df.groupby("activity").unwrap()
+        .select("distance")
+        .sum()
+        .unwrap();
+    let debt = summary.column("activity").unwrap()
+        .utf8()
+        .unwrap()
+        .into_iter()
+        .zip(summary.column("distance_sum").unwrap().f64().unwrap().into_iter())
+        .fold(Some(0.0), |debt, (a, d)| match a {
+            Some("cycling") => debt.map(|x| d.map(|y| x - y)).flatten(),
+            Some("driving") => debt.map(|x| d.map(|y| x + y)).flatten(),
+            _ => debt
+        })
+        .unwrap();
+    println!("{:?}", summary);
+    println!("Total debt is: {:.0}km", debt / 1000.0);
 }
 
 fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
@@ -44,7 +62,7 @@ fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
                                                          &recs.iter()
                                                               .map(|a| a.end.with_timezone(&Local).naive_local())
                                                               .collect::<Vec<_>>());
-    let debt_col = Series::new("debt",
+    let _debt_col = Series::new("debt",
                                &recs.iter()
                                     .scan(0.0, |state, a| {
                                         match a.activity {
@@ -58,7 +76,6 @@ fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
                         end_arr.into(),
                         distance_col,
                         activity_col,
-                        debt_col,
     ]).expect("Couldn't build dataframe")
 }
 
