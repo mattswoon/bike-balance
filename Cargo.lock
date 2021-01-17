@@ -90,10 +90,10 @@ name = "bike-balance"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "gnuplot",
  "itertools 0.10.0",
  "kml",
  "polars",
- "textplots",
 ]
 
 [[package]]
@@ -340,12 +340,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "drawille"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81e127c19c76f5610bb32f6a5f5d1ce5a5374fedba554f05cf5599e3041cd634"
-
-[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -414,6 +408,15 @@ name = "glob"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
+
+[[package]]
+name = "gnuplot"
+version = "0.0.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8de437277a7ec10de5f34e3147c7da4c6d8b279c5d8ae1e33e842fd9432bb0f3"
+dependencies = [
+ "byteorder",
+]
 
 [[package]]
 name = "hashbrown"
@@ -1107,15 +1110,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
-]
-
-[[package]]
-name = "textplots"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "368535e8fa80f6f07725dd0b7a756792db7758786881665a7951f436b92d5141"
-dependencies = [
- "drawille",
 ]
 
 [[package]]

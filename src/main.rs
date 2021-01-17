@@ -8,6 +8,10 @@ use kml::{
 };
 use chrono::{DateTime, FixedOffset, Local};
 use polars::prelude::*;
+use gnuplot::{
+    Figure,
+    AxesCommon
+};
 
 fn main() {
     let path = env::args().skip(1).next().expect("Didn't get a path");
@@ -22,6 +26,30 @@ fn main() {
     activities.sort_by_key(|a| a.start);
     let df = to_dataframe(activities);
     println!("{:?}", df);
+    let y = df.column("debt_km")
+        .unwrap()
+        .f64()
+        .unwrap()
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .unwrap();
+    let x = df.column("start")
+        .unwrap()
+        .date64()
+        .unwrap()
+        .as_naive_datetime_iter()
+        .map(|odt| odt.map(|dt| dt.timestamp()))
+        .collect::<Option<Vec<_>>>()
+        .unwrap();
+    let mut fig = Figure::new();
+    fig
+        .axes2d()
+        .lines(x, &y, &[])
+        .set_x_time(true)
+        .set_y_label("Debt (km)", &[]);
+    fig
+        .show()
+        .unwrap();
 }
 
 fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
@@ -44,12 +72,12 @@ fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
                                                          &recs.iter()
                                                               .map(|a| a.end.with_timezone(&Local).naive_local())
                                                               .collect::<Vec<_>>());
-    let debt_col = Series::new("debt",
+    let debt_col = Series::new("debt_km",
                                &recs.iter()
                                     .scan(0.0, |state, a| {
                                         match a.activity {
-                                            ActivityKind::Driving => { *state = *state + a.distance; () },
-                                            ActivityKind::Cycling => { *state = *state - a.distance; () },
+                                            ActivityKind::Driving => { *state = *state + a.distance / 1000.0; () },
+                                            ActivityKind::Cycling => { *state = *state - a.distance / 1000.0; () },
                                         };
                                         Some(state.clone())
                                     })
