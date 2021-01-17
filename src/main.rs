@@ -7,7 +7,6 @@ use kml::{
     types::{Kml, Placemark}
 };
 use chrono::{DateTime, FixedOffset, Local};
-use itertools::Itertools;
 use polars::prelude::*;
 
 fn main() {
@@ -23,27 +22,6 @@ fn main() {
     activities.sort_by_key(|a| a.start);
     let df = to_dataframe(activities);
     println!("{:?}", df);
-//    let x: Vec<_> = activities.into_iter()
-//        .scan(0.0, |state, a| {
-//            let t = match a {
-//                Activity::Driving(v) => {
-//                    *state = *state + v.distance;
-//                    v.time
-//                },
-//                Activity::Cycling(v) => {
-//                    *state = *state - v.distance;
-//                    v.time
-//                }
-//            };
-//            Some((t, state.clone()))
-//        })
-//        .collect();
-//    let grp = x.into_iter()
-//        .group_by(|(t, v)| t.with_timezone(&Local).date())
-//        .into_iter()
-//        .map(|(k, arr)| (k, arr.last().unwrap().1))
-//        .collect::<Vec<_>>();
-//    println!("{:?}", grp);
 }
 
 fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
@@ -54,8 +32,8 @@ fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
     let activity_col = Series::new("activity",
                                    &recs.iter()
                                         .map(|a| match a.activity {
-                                            ActivityKind::Driving => 0,
-                                            ActivityKind::Cycling => 1 
+                                            ActivityKind::Driving => "driving",
+                                            ActivityKind::Cycling => "cycling" 
                                         })
                                         .collect::<Vec<_>>());
     let start_arr = Date64Chunked::new_from_naive_datetime("start",
