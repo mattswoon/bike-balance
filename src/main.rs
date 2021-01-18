@@ -1,12 +1,18 @@
 use std::{
     env,
-    fs
+    fs,
 };
 use kml::{
     reader::KmlReader,
     types::{Kml, Placemark}
 };
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{
+    DateTime, 
+    FixedOffset, 
+    Local, 
+    Datelike,
+    TimeZone
+};
 use polars::prelude::*;
 
 fn main() {
@@ -40,6 +46,15 @@ fn main() {
         .unwrap();
     println!("{:?}", summary);
     println!("Total debt is: {:.0}km", debt / 1000.0);
+    if debt > 0.0 {
+        let today = Local::today();
+        let eoy = Local.ymd(today.year() + 1, 1, 1);
+        let ndays: f64 = (eoy - today).num_days() as f64;
+        let nweeks: f64 = ndays / 7.0;
+        let daily_req: f64 = debt / ndays / 1000.0;
+        let weekly_req = debt / nweeks / 1000.0;
+        println!("You'll need to ride {:.2}km per day or {:.2}km per week to repay this debt", daily_req, weekly_req);
+    }
 }
 
 fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
