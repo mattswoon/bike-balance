@@ -19,9 +19,10 @@ shape: (2, 2)
 │ ---      ┆ ---          │
 │ str      ┆ f64          │
 ╞══════════╪══════════════╡
-│ driving  ┆ 1.033885e6   │
+│ driving  ┆ 1.047042e6   │
 ├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ cycling  ┆ 4.2985e4     │
+│ cycling  ┆ 7.9537e4     │
 ╰──────────┴──────────────╯
-Total debt is: 991km
+Total debt is: 968km
+You'll need to ride 2.80km per day or 19.63km per week to repay this debt
 ```
