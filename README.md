@@ -8,11 +8,12 @@ kml files and pull out the relevant stats.
 
 # Example
 
-ATM just prints the debug output of a polars dataframe. One day I'll make it print
-something pretty that can be catted straight to a tweet.
+You can chuck all your daily kml files into a folder and set that folder as the environment variable `$BIKEBALANCE`, then simply call `bike-balance`. Alternatively you can pass this folder as the first argument to `bike-balance`.
+
+atm it just prints the debug output of a polars dataframe giving the total amount driving and cycling, how much more you've driven than cycled, and how much you need to cycle each day/week to get that down to zero by the end of the year
 
 ```bash
->>> bike-balance ./data/
+>>> bike-balance
 shape: (2, 2)
 ╭──────────┬──────────────╮
 │ activity ┆ distance_sum │
