@@ -1,6 +1,7 @@
 use std::{
     env,
     fs,
+    collections::HashMap
 };
 use kml::{
     reader::KmlReader,
@@ -11,7 +12,8 @@ use chrono::{
     FixedOffset, 
     Local, 
     Datelike,
-    TimeZone
+    TimeZone,
+    Duration
 };
 use polars::prelude::*;
 
@@ -29,22 +31,10 @@ fn main() {
     }
     activities.sort_by_key(|a| a.start);
     let df = to_dataframe(activities);
-    let summary = df.groupby("activity").unwrap()
-        .select("distance")
-        .sum()
-        .unwrap();
-    let debt = summary.column("activity").unwrap()
-        .utf8()
-        .unwrap()
-        .into_iter()
-        .zip(summary.column("distance_sum").unwrap().f64().unwrap().into_iter())
-        .fold(Some(0.0), |debt, (a, d)| match a {
-            Some("cycling") => debt.map(|x| d.map(|y| x - y)).flatten(),
-            Some("driving") => debt.map(|x| d.map(|y| x + y)).flatten(),
-            _ => debt
-        })
-        .unwrap();
-    println!("{:?}", summary);
+    let full_summary = summary(df.clone());
+    let total_driving = full_summary.get("driving").unwrap();
+    let total_cycling = full_summary.get("cycling").unwrap();
+    let debt = total_driving - total_cycling;
     println!("Total debt is: {:.0}km", debt / 1000.0);
     if debt > 0.0 {
         let today = Local::today();
@@ -53,8 +43,44 @@ fn main() {
         let nweeks: f64 = ndays / 7.0;
         let daily_req: f64 = debt / ndays / 1000.0;
         let weekly_req = debt / nweeks / 1000.0;
-        println!("You'll need to ride {:.2}km per day or {:.2}km per week to repay this debt", daily_req, weekly_req);
+        println!("To repay this debt you'll need to ride:");
+        println!("\t{:.2}km per day or ", daily_req);
+        println!("\t{:.2}km per week", weekly_req);
     }
+    println!("");
+    let recently = recent_summary(&df, 1);
+    println!("Over the last week you've:");
+    println!("\tdriven {:.2}km", recently.get("driving").unwrap() / 1000.0);
+    println!("\tcycled {:.2}km", recently.get("cycling").unwrap() / 1000.0);
+}
+
+fn summary(df: DataFrame) -> HashMap<String, f64> {
+    let summary = df.groupby("activity").unwrap()
+        .select("distance")
+        .sum()
+        .unwrap();
+    summary.column("activity").unwrap()
+        .utf8()
+        .unwrap()
+        .into_iter()
+        .zip(summary.column("distance_sum").unwrap().f64().unwrap().into_iter())
+        .map(|(a, d)| a.map(|x| x.to_string()).zip(d))
+        .collect::<Option<HashMap<_, _>>>()
+        .unwrap_or(HashMap::new())
+}
+
+fn recent_summary(df: &DataFrame, weeks: i64) -> HashMap<String, f64> {
+    let weeks_ago = (Local::today() - Duration::weeks(weeks)).naive_local();
+    let mask: BooleanChunked = df.column("end")
+        .unwrap()
+        .date64()
+        .unwrap()
+        .as_naive_datetime_iter()
+        .into_iter()
+        .map(|od| od.map(|d| d.date() > weeks_ago).unwrap_or(false))
+        .collect();
+    let df = df.filter(&mask).unwrap();
+    summary(df)
 }
 
 fn to_dataframe(recs: Vec<ActivityRecord>) -> DataFrame {
