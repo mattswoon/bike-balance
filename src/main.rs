@@ -52,6 +52,11 @@ fn main() {
     println!("Over the last week you've:");
     println!("\tdriven {:.2}km", recently.get("driving").unwrap() / 1000.0);
     println!("\tcycled {:.2}km", recently.get("cycling").unwrap() / 1000.0);
+    println!("");
+    println!("In total you've");
+    println!("\tdriven {:.2}km", total_driving / 1000.0);
+    println!("\tcycled {:.2}km", total_cycling / 1000.0);
+
 }
 
 fn summary(df: DataFrame) -> HashMap<String, f64> {

@@ -10,16 +10,24 @@ kml files and pull out the relevant stats.
 
 You can chuck all your daily kml files into a folder and set that folder as the environment variable `$BIKEBALANCE`, then simply call `bike-balance`. Alternatively you can pass this folder as the first argument to `bike-balance`.
 
-atm it just prints how much more you've driven than cycled, and how much you need to cycle each day/week to get that down to zero by the end of the year and your driving/cycling totals from the last week.
+atm it prints 
+ - how much more you've driven than cycled, 
+ - how much you need to cycle each day/week to get that down to zero by the end of the year
+ - your driving/cycling totals from the last week
+ - your driving/cycling totals
 
 ```bash
 >>> bike-balance
-Total debt is: 1020km
+Total debt is: 945km
 To repay this debt you'll need to ride:
-	2.98km per day or 
-	20.87km per week
+	2.94km per day or 
+	20.55km per week
 
 Over the last week you've:
-	driven 68.06km
-	cycled 39.29km
+	driven 8.77km
+	cycled 50.26km
+
+In total you've
+	driven 1208.85km
+	cycled 263.76km
 ```
